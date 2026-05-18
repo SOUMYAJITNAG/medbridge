@@ -1,0 +1,41 @@
+# MedBridge Ukraine — Backend Dependencies
+
+# Web Framework
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+
+# Gemma 4 via Google GenAI API (multimodal — handles images, voice, multilingual)
+google-genai>=0.8.0
+
+# Google ADK — specialist agent definitions (LlmAgent, FunctionTool, SequentialAgent)
+google-adk>=0.5.0
+
+# LangGraph — workflow state machine + human-in-the-loop approval node
+langgraph>=0.2.0
+
+# Environment
+python-dotenv==1.0.1
+
+# File uploads & multipart
+python-multipart==0.0.9
+
+# Data validation (Pydantic v2 ships with FastAPI)
+pydantic>=2.9.0
+
+# Templating
+jinja2>=3.1.4
+
+# Static file serving
+aiofiles==23.2.1
+
+# Image handling
+Pillow==10.3.0
+
+# PDF export
+reportlab==4.2.0
+
+# QR Code generation
+qrcode[pil]==7.4.2
+
+# HTTP client (for health checks)
+httpx>=0.27.0
