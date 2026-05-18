@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Pipeline Progress — MedBridge Ukraine{% endblock %}
+
+{% block content %}
+<div class="page-container" x-data="pipelineApp('{{ run_id }}')" x-init="init()">
+
+  <!-- Page Header -->
+  <div class="page-header pipeline-header">
+    <div class="page-header-content">
+      <div class="breadcrumb">
+        <a href="/">Home</a> <span>/</span>
+        <a href="/upload">Upload</a> <span>/</span>
+        <span>Pipeline</span>
+      </div>
+      <h1 class="page-title">AI Medical Analysis Pipeline</h1>
+      <p class="page-subtitle">
+        Six Gemma 4 powered agents are reconstructing your medical continuity in real-time
+      </p>
+      <div class="run-id-badge">
+        Run ID: <code x-text="runId"></code>
+      </div>
+    </div>
+    <div class="pipeline-overall-status">
+      <div class="status-circle" :class="overallStatus">
+        <div class="status-pulse" x-show="overallStatus === 'running'"></div>
+        <i :data-feather="statusIcon()"></i>
+      </div>
+      <div class="status-label" x-text="statusLabel()"></div>
+    </div>
+  </div>
+
+  <!-- Progress Bar -->
+  <div class="global-progress-wrap">
+    <div class="global-progress-bar">
+      <div class="global-progress-fill" :style="'width: ' + progressPct() + '%'"></div>
+    </div>
+    <div class="global-progress-label">
+      <span x-text="completedSteps + ' of 6 agents complete'"></span>
+      <span x-text="progressPct() + '%'"></span>
+    </div>
+  </div>
+
+  <!-- Agent Pipeline Cards -->
+  <div class="agents-grid">
+    <template x-for="agent in agents" :key="agent.step">
+      <div class="agent-card" :class="agent.status">
+        <div class="agent-card-header">
+          <div class="agent-step-badge" x-text="'0' + agent.step"></div>
+          <div class="agent-icon" :style="'--agent-color: ' + agent.color">
+            <i :data-feather="agent.icon"></i>
+          </div>
+          <div class="agent-status-dot" :class="agent.status"></div>
+        </div>
+        <div class="agent-card-body">
+          <div class="agent-name" x-text="agent.label"></div>
+          <div class="agent-description" x-text="agent.description"></div>
+        </div>
+
+        <!-- Active tools ticker -->
+        <div class="agent-tools" x-show="agent.status === 'running' && agent.currentTool">
+          <div class="tool-ticker">
+            <i data-feather="cpu"></i>
+            <span x-text="'Calling: ' + agent.currentTool"></span>
+          </div>
+        </div>
+
+        <!-- Agent output preview -->
+        <div class="agent-output" x-show="agent.status === 'done' && agent.outputPreview">
+          <div class="output-preview" x-text="agent.outputPreview"></div>
+        </div>
+
+        <!-- Status footer -->
+        <div class="agent-card-footer">
+          <template x-if="agent.status === 'pending'">
+            <span class="status-tag pending"><i data-feather="clock"></i> Waiting</span>
+          </template>
+          <template x-if="agent.status === 'running'">
+            <span class="status-tag running">
+              <span class="spinner-sm"></span> Processing...
+            </span>
+          </template>
+          <template x-if="agent.status === 'done'">
+            <span class="status-tag done"><i data-feather="check-circle"></i> Complete</span>
+          </template>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <!-- Live Events Feed -->
+  <div class="events-panel">
+    <div class="events-panel-header">
+      <div class="events-title">
+        <i data-feather="terminal"></i>
+        <span>Live Agent Events</span>
+        <span class="events-count" x-text="events.length"></span>
+      </div>
+      <button class="btn-ghost-sm" @click="clearEvents()">Clear</button>
+    </div>
+    <div class="events-feed" id="eventsFeed">
+      <template x-for="(evt, idx) in events" :key="idx">
+        <div class="event-item" :class="'event-' + evt.type">
+          <div class="event-time" x-text="evt.time"></div>
+          <div class="event-type-badge" x-text="evt.type"></div>
+          <div class="event-agent" x-text="evt.agent_label || evt.agent || 'system'"></div>
+          <div class="event-message" x-text="formatEventMessage(evt)"></div>
+        </div>
+      </template>
+      <div x-show="events.length === 0" class="events-empty">
+        <i data-feather="activity"></i>
+        <span>Waiting for pipeline to start...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Completion Actions -->
+  <div class="completion-banner" x-show="overallStatus === 'done'" x-transition>
+    <div class="completion-icon">🎉</div>
+    <div class="completion-content">
+      <h2>Emergency Medical Passport Ready!</h2>
+      <p>All 6 agents completed. Your medical continuity passport has been generated.</p>
+      <div class="completion-actions">
+        <a :href="'/passport/' + runId" class="btn-primary btn-lg">
+          <i data-feather="file-text"></i> View Passport
+        </a>
+        <a :href="'/verify/' + runId" class="btn-secondary btn-lg">
+          <i data-feather="user-check"></i> Doctor Verification
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Banner -->
+  <div class="error-banner" x-show="overallStatus === 'error'" x-transition>
+    <i data-feather="alert-circle"></i>
+    <div>
+      <strong>Pipeline Error</strong>
+      <p x-text="errorMessage"></p>
+    </div>
+    <a href="/upload" class="btn-ghost-sm">Try Again</a>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/pipeline.js"></script>
+{% endblock %}

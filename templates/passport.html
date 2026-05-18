@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+{% block title %}Emergency Medical Passport — MedBridge Ukraine{% endblock %}
+
+{% block content %}
+<div class="page-container" x-data="passportApp('{{ run_id }}')" x-init="init()">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-content">
+      <div class="breadcrumb">
+        <a href="/">Home</a> <span>/</span>
+        <a href="/upload">Upload</a> <span>/</span>
+        <span>Passport</span>
+      </div>
+      <h1 class="page-title">Emergency Medical Passport</h1>
+      <p class="page-subtitle">
+        AI-reconstructed medical continuity document. Requires clinician verification before treatment.
+      </p>
+    </div>
+    <div class="passport-actions">
+      <a :href="'/api/export/' + runId + '/pdf'" class="btn-secondary" target="_blank">
+        <i data-feather="download"></i> Download PDF
+      </a>
+      <a :href="'/verify/' + runId" class="btn-primary">
+        <i data-feather="user-check"></i> Verify
+      </a>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" x-show="loading">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading passport data...</div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-banner" x-show="error && !loading" x-text="error"></div>
+
+  <!-- Passport Content -->
+  <div x-show="passport && !loading">
+
+    <!-- Disclaimer Banner -->
+    <div class="disclaimer-banner">
+      <i data-feather="alert-triangle"></i>
+      <strong>AI-Assisted Reconstruction</strong> — All data requires clinician verification before any treatment decision.
+      This document was generated from fragmented evidence and may contain inaccuracies.
+    </div>
+
+    <!-- Patient Header Card -->
+    <div class="passport-main-card">
+      <div class="passport-main-header">
+        <div class="passport-main-logo">
+          <div class="pml-cross">+</div>
+        </div>
+        <div class="passport-main-info">
+          <div class="passport-label">EMERGENCY MEDICAL PASSPORT</div>
+          <div class="passport-patient-name" x-text="passport?.passport_data?.patient?.name || 'Unknown Patient'"></div>
+          <div class="passport-meta">
+            <span x-show="passport?.passport_data?.patient?.age">
+              Age: <strong x-text="passport?.passport_data?.patient?.age"></strong>
+            </span>
+            <span x-show="passport?.patient_language">
+              Language: <strong x-text="(passport?.patient_language || '').toUpperCase()"></strong>
+            </span>
+          </div>
+        </div>
+        <div class="passport-confidence-badge">
+          <div class="confidence-circle"
+               :class="confidenceClass(passport?.passport_data?.data_confidence?.overall_score)">
+            <span x-text="Math.round((passport?.passport_data?.data_confidence?.overall_score || 0) * 100) + '%'"></span>
+          </div>
+          <div class="confidence-grade" x-text="'Grade ' + (passport?.passport_data?.data_confidence?.grade || '?')"></div>
+        </div>
+        <div class="passport-qr">
+          <img :src="'/api/export/' + runId + '/qr'" alt="Medical QR Code" class="qr-img" />
+          <div class="qr-label">Scan for Emergency Info</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="passport-content-grid">
+
+      <!-- Left Column -->
+      <div class="passport-col">
+
+        <!-- Critical Allergies -->
+        <div class="passport-section critical">
+          <div class="ps-header">
+            <i data-feather="alert-circle"></i>
+            <h3>Critical Allergies</h3>
+          </div>
+          <div class="ps-content">
+            <template x-if="passport?.passport_data?.critical_allergies?.length > 0">
+              <div>
+                <template x-for="allergy in passport.passport_data.critical_allergies" :key="allergy.substance">
+                  <div class="allergy-row">
+                    <span class="allergy-badge-big">⚠️ <span x-text="allergy.substance"></span></span>
+                    <span class="allergy-detail" x-text="allergy.reaction || allergy.reaction_type"></span>
+                    <span class="severity-badge" :class="allergy.severity?.toLowerCase()"
+                          x-text="allergy.severity"></span>
+                  </div>
+                </template>
+              </div>
+            </template>
+            <template x-if="!passport?.passport_data?.critical_allergies?.length">
+              <div class="no-data-note">No allergies recorded — verify with patient</div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Current Medications -->
+        <div class="passport-section">
+          <div class="ps-header">
+            <i data-feather="package"></i>
+            <h3>Current Medications</h3>
+          </div>
+          <div class="ps-content">
+            <template x-if="passport?.passport_data?.current_medications?.length > 0">
+              <div class="medications-list">
+                <template x-for="(med, idx) in passport.passport_data.current_medications" :key="idx">
+                  <div class="medication-row">
+                    <div class="med-name" x-text="med.name"></div>
+                    <div class="med-details">
+                      <span x-show="med.dosage" x-text="med.dosage"></span>
+                      <span x-show="med.frequency"> · <span x-text="med.frequency"></span></span>
+                    </div>
+                    <div class="med-confidence" x-show="med.confidence">
+                      <div class="mini-bar">
+                        <div class="mini-fill"
+                             :style="'width: ' + Math.round((typeof med.confidence === 'number' ? med.confidence : 0.5) * 100) + '%'">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </template>
+            <template x-if="!passport?.passport_data?.current_medications?.length">
+              <div class="no-data-note">No medications recorded</div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Chronic Conditions -->
+        <div class="passport-section">
+          <div class="ps-header">
+            <i data-feather="activity"></i>
+            <h3>Chronic Conditions</h3>
+          </div>
+          <div class="ps-content">
+            <template x-if="passport?.passport_data?.chronic_conditions?.length > 0">
+              <div class="conditions-list">
+                <template x-for="(cond, idx) in passport.passport_data.chronic_conditions" :key="idx">
+                  <div class="condition-chip" x-text="typeof cond === 'object' ? cond.condition : cond"></div>
+                </template>
+              </div>
+            </template>
+            <template x-if="!passport?.passport_data?.chronic_conditions?.length">
+              <div class="no-data-note">No conditions recorded</div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Vaccinations -->
+        <div class="passport-section" x-show="passport?.passport_data?.vaccination_status?.length > 0">
+          <div class="ps-header">
+            <i data-feather="shield"></i>
+            <h3>Vaccination Status</h3>
+          </div>
+          <div class="ps-content">
+            <template x-for="(vac, idx) in passport?.passport_data?.vaccination_status || []" :key="idx">
+              <div class="vac-row">
+                <span class="vac-name" x-text="typeof vac === 'object' ? vac.vaccine : vac"></span>
+                <span class="vac-date" x-show="vac.last_dose" x-text="vac.last_dose"></span>
+              </div>
+            </template>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column -->
+      <div class="passport-col">
+
+        <!-- Risk Flags -->
+        <div class="passport-section risk" x-show="passport?.passport_data?.risk_flags?.length > 0">
+          <div class="ps-header">
+            <i data-feather="flag"></i>
+            <h3>Risk Flags <span class="flag-count" x-text="passport?.passport_data?.risk_flags?.length"></span></h3>
+          </div>
+          <div class="ps-content">
+            <template x-for="(flag, idx) in passport?.passport_data?.risk_flags || []" :key="idx">
+              <div class="risk-flag-row" :class="(flag.severity || '').toLowerCase()">
+                <span class="risk-severity" x-text="flag.severity || 'MEDIUM'"></span>
+                <span class="risk-text" x-text="typeof flag === 'object' ? (flag.flag || flag.description) : flag"></span>
+              </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Medical Timeline -->
+        <div class="passport-section timeline-section">
+          <div class="ps-header">
+            <i data-feather="clock"></i>
+            <h3>Medical Timeline</h3>
+          </div>
+          <div class="ps-content">
+            <template x-if="passport?.passport_data?.medical_timeline_summary">
+              <p class="timeline-narrative" x-text="passport.passport_data.medical_timeline_summary"></p>
+            </template>
+            <template x-if="passport?.timeline_data?.timeline_events?.length > 0">
+              <div class="timeline-list">
+                <template x-for="(evt, idx) in (passport?.timeline_data?.timeline_events || []).slice(0,8)" :key="idx">
+                  <div class="timeline-item">
+                    <div class="tl-dot" :class="evt.event_type"></div>
+                    <div class="tl-content">
+                      <div class="tl-date" x-text="evt.date"></div>
+                      <div class="tl-desc" x-text="evt.description"></div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </template>
+            <template x-if="!passport?.passport_data?.medical_timeline_summary && !passport?.timeline_data?.timeline_events?.length">
+              <div class="no-data-note">No timeline data available</div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Multilingual Summary -->
+        <div class="passport-section multilingual">
+          <div class="ps-header">
+            <i data-feather="globe"></i>
+            <h3>Multilingual Summary</h3>
+          </div>
+          <div class="ps-content">
+            <div class="lang-tabs" x-data="{activeLang: 'en'}">
+              <div class="lang-tab-buttons">
+                <template x-for="[code, text] in Object.entries(passport?.passport_data?.multilingual_summary || {})" :key="code">
+                  <button class="lang-tab-btn" :class="{active: activeLang === code}"
+                          @click="activeLang = code" x-text="code.toUpperCase()"></button>
+                </template>
+              </div>
+              <template x-for="[code, text] in Object.entries(passport?.passport_data?.multilingual_summary || {})" :key="code">
+                <div class="lang-content" x-show="activeLang === code" x-text="text"></div>
+              </template>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Data Confidence Summary -->
+    <div class="confidence-summary-card">
+      <div class="csc-icon">📊</div>
+      <div class="csc-content">
+        <h3>Data Confidence Report</h3>
+        <p x-text="passport?.passport_data?.data_confidence?.caveat || 'Reconstructed from fragmented evidence. Human verification required.'"></p>
+      </div>
+      <div class="csc-grade" :class="confidenceClass(passport?.passport_data?.data_confidence?.overall_score)">
+        <span x-text="Math.round((passport?.passport_data?.data_confidence?.overall_score || 0) * 100) + '%'"></span>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="passport-action-bar">
+      <a :href="'/api/export/' + runId + '/pdf'" class="btn-primary" target="_blank">
+        <i data-feather="file-text"></i> Download PDF Passport
+      </a>
+      <a :href="'/verify/' + runId" class="btn-secondary">
+        <i data-feather="user-check"></i> Doctor Verification Dashboard
+      </a>
+      <a href="/upload" class="btn-ghost">
+        <i data-feather="plus"></i> New Patient
+      </a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function passportApp(runId) {
+  return {
+    runId,
+    passport: null,
+    loading: true,
+    error: null,
+    async init() {
+      try {
+        const res = await fetch(`/api/passport/${runId}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        this.passport = await res.json();
+        if (this.passport.status !== 'completed') {
+          this.error = `Passport not ready yet. Status: ${this.passport.status}`;
+        }
+      } catch(e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+        this.$nextTick(() => feather.replace());
+      }
+    },
+    confidenceClass(score) {
+      if (!score) return 'conf-unknown';
+      if (score >= 0.7) return 'conf-high';
+      if (score >= 0.4) return 'conf-medium';
+      return 'conf-low';
+    }
+  };
+}
+</script>
+{% endblock %}

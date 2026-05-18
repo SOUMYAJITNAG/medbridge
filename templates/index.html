@@ -1,0 +1,382 @@
+{% extends "base.html" %}
+
+{% block title %}MedBridge — Medical Continuity for Refugees Worldwide{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-bg">
+    <div class="hero-particles" id="particles"></div>
+    <div class="hero-gradient"></div>
+  </div>
+
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      <span>Health &amp; Sciences Track · Gemma 4 Good Hackathon</span>
+    </div>
+
+    <h1 class="hero-title">
+      Medical Continuity<br/>
+      <span class="gradient-text">In Crisis</span>
+    </h1>
+
+    <p class="hero-subtitle">
+      When refugees flee war, conflict, or disaster, they lose everything — including
+      their medical history. MedBridge uses <strong>Gemma 4 multimodal AI</strong> to
+      reconstruct medical continuity from damaged prescriptions, medicine strips, and
+      voice notes in <strong>any language or script</strong> — from Ukrainian and
+      Arabic to Pashto, Tigrinya, Rohingya, and tribal languages.
+    </p>
+
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="stat-number">120M+</div>
+        <div class="stat-label">Displaced People Worldwide</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="stat-number">60+</div>
+        <div class="stat-label">Languages Supported</div>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <div class="stat-number">0</div>
+        <div class="stat-label">Medical Decisions by AI</div>
+      </div>
+    </div>
+
+    <div class="hero-actions">
+      <a href="/upload" class="btn-primary btn-lg">
+        <i data-feather="upload-cloud"></i>
+        Upload Medical Evidence
+      </a>
+      <a href="#how-it-works" class="btn-ghost btn-lg">
+        <i data-feather="play-circle"></i>
+        See How It Works
+      </a>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="passport-preview">
+      <div class="passport-header">
+        <div class="passport-logo">+</div>
+        <div>
+          <div class="passport-title-text">Emergency Medical Passport</div>
+          <div class="passport-subtitle-text">MedBridge</div>
+        </div>
+        <div class="passport-flag">🌍</div>
+      </div>
+      <div class="passport-content">
+        <div class="passport-field">
+          <div class="pf-label">Patient</div>
+          <div class="pf-value">Olena Kovalenko</div>
+        </div>
+        <div class="passport-field">
+          <div class="pf-label">Critical Allergy</div>
+          <div class="pf-value allergy-badge">⚠️ Penicillin</div>
+        </div>
+        <div class="passport-field">
+          <div class="pf-label">Medications</div>
+          <div class="pf-value">
+            <span class="med-chip">Metformin 500mg</span>
+            <span class="med-chip">Atorvastatin</span>
+          </div>
+        </div>
+        <div class="passport-field">
+          <div class="pf-label">Confidence</div>
+          <div class="confidence-bar-wrap">
+            <div class="confidence-bar" style="width: 78%"></div>
+            <span class="confidence-pct">78%</span>
+          </div>
+        </div>
+        <div class="passport-langs">
+          <span class="lang-tag">EN</span>
+          <span class="lang-tag">🇺🇦 UK</span>
+          <span class="lang-tag">🇸🇾 AR</span>
+          <span class="lang-tag">🇦🇫 PS</span>
+          <span class="lang-tag">🇪🇷 TI</span>
+        </div>
+      </div>
+      <div class="passport-footer-badge">AI-VERIFIED · DOCTOR REVIEW REQUIRED</div>
+    </div>
+  </div>
+</section>
+
+<!-- Problem Section -->
+<section class="section problem-section">
+  <div class="section-container">
+    <div class="section-header">
+      <div class="section-badge danger">The Crisis</div>
+      <h2 class="section-title">When War Erases Your Medical History</h2>
+      <p class="section-subtitle">
+        Millions of displaced people arrive at hospitals with nothing but memory,
+        damaged documents, and mobile phone photos — in a language doctors don't understand.
+      </p>
+    </div>
+
+    <div class="problems-grid">
+      <div class="problem-card">
+        <div class="problem-icon">📋</div>
+        <h3>Lost Medical Records</h3>
+        <p>Prescriptions, lab reports, and discharge papers left behind or destroyed during evacuation</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-icon">🌐</div>
+        <h3>Language Barriers</h3>
+        <p>Medical documents in Ukrainian, Arabic, Pashto, Tigrinya, Burmese, or tribal scripts that local healthcare workers cannot read</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-icon">💊</div>
+        <h3>Medication Continuity</h3>
+        <p>Chronic patients (diabetes, hypertension, asthma) losing track of critical prescriptions</p>
+      </div>
+      <div class="problem-card">
+        <div class="problem-icon">⚠️</div>
+        <h3>Unknown Allergies</h3>
+        <p>Critical allergy information missing, creating life-threatening risks during emergency care</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Solution Section -->
+<section class="section solution-section" id="how-it-works">
+  <div class="section-container">
+    <div class="section-header">
+      <div class="section-badge success">The Solution</div>
+      <h2 class="section-title">Six AI Agents. One Emergency Passport.</h2>
+      <p class="section-subtitle">
+        Gemma 4's multimodal intelligence processes every type of fragmented evidence —
+        guided by Google ADK agents — with humans always in control.
+      </p>
+    </div>
+
+    <div class="pipeline-visual">
+      <div class="pipeline-step">
+        <div class="step-icon" style="--step-color: #0057B7">
+          <i data-feather="eye"></i>
+        </div>
+        <div class="step-content">
+          <div class="step-num">01</div>
+          <h4>Multimodal Analysis</h4>
+          <p>Gemma 4 reads images, voice notes &amp; handwritten docs in any language</p>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-icon" style="--step-color: #7C3AED">
+          <i data-feather="layers"></i>
+        </div>
+        <div class="step-content">
+          <div class="step-num">02</div>
+          <h4>Medical Structuring</h4>
+          <p>Organises medicines, conditions, allergies, and vaccinations</p>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-icon" style="--step-color: #0891B2">
+          <i data-feather="clock"></i>
+        </div>
+        <div class="step-content">
+          <div class="step-num">03</div>
+          <h4>Timeline Reconstruction</h4>
+          <p>Rebuilds treatment history from fragmented evidence fragments</p>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-icon" style="--step-color: #DC2626">
+          <i data-feather="shield"></i>
+        </div>
+        <div class="step-content">
+          <div class="step-num">04</div>
+          <h4>Risk Analysis</h4>
+          <p>Flags conflicts, missing data, and assigns confidence scores</p>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="pipeline-step">
+        <div class="step-icon" style="--step-color: #D97706">
+          <i data-feather="user-check"></i>
+        </div>
+        <div class="step-content">
+          <div class="step-num">05</div>
+          <h4>Human Verification</h4>
+          <p>Clinician review checklist — doctors stay fully in control</p>
+        </div>
+        <div class="step-arrow">→</div>
+      </div>
+      <div class="pipeline-step last">
+        <div class="step-icon" style="--step-color: #059669">
+          <i data-feather="file-text"></i>
+        </div>
+        <div class="step-content">
+          <div class="step-num">06</div>
+          <h4>Passport Generation</h4>
+          <p>Multilingual PDF + QR code emergency medical passport</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="section features-section">
+  <div class="section-container">
+    <div class="section-header">
+      <div class="section-badge primary">Capabilities</div>
+      <h2 class="section-title">Everything Gemma 4 Can Do For Refugees</h2>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card featured">
+        <div class="feature-icon-wrap blue">
+          <i data-feather="camera"></i>
+        </div>
+        <h3>Medical Image OCR</h3>
+        <p>Gemma 4 natively reads handwritten prescriptions, medicine strips, lab reports — no separate OCR library needed</p>
+        <div class="feature-tag">Gemma 4 Multimodal</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap purple">
+          <i data-feather="mic"></i>
+        </div>
+        <h3>Voice Note Understanding</h3>
+        <p>Patients speak in Ukrainian or Russian — Gemma 4 transcribes and extracts medical context</p>
+        <div class="feature-tag">Multilingual Audio</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap teal">
+          <i data-feather="globe"></i>
+        </div>
+        <h3>Multilingual Translation</h3>
+        <p>Summaries in English, Ukrainian, German, Polish — meeting patients and doctors where they are</p>
+        <div class="feature-tag">4+ Languages</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap amber">
+          <i data-feather="activity"></i>
+        </div>
+        <h3>Confidence Scoring</h3>
+        <p>Every data point gets a confidence score. Low-confidence items flagged for mandatory human review</p>
+        <div class="feature-tag">Uncertainty Engine</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap green">
+          <i data-feather="user-check"></i>
+        </div>
+        <h3>Human-in-the-Loop</h3>
+        <p>Doctors approve, reject, and annotate every AI output. AI assists — humans decide.</p>
+        <div class="feature-tag">Doctor Dashboard</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon-wrap red">
+          <i data-feather="download"></i>
+        </div>
+        <h3>QR + PDF Export</h3>
+        <p>Printable emergency passport with QR code for border crossing and hospital admission</p>
+        <div class="feature-tag">Portable Document</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Ethics Section -->
+<section class="section ethics-section">
+  <div class="section-container">
+    <div class="ethics-card">
+      <div class="ethics-icon">⚖️</div>
+      <h2>AI Should Organise Medical Understanding, Not Replace Doctors</h2>
+      <p>
+        MedBridge Ukraine is designed from the ground up with ethical AI principles.
+        Every piece of data is confidence-scored, uncertainty-flagged, and requires
+        clinician verification before any treatment decision.
+      </p>
+      <div class="ethics-pillars">
+        <div class="ethics-pillar">
+          <i data-feather="check-circle"></i>
+          <span>AI reconstructs &amp; organises</span>
+        </div>
+        <div class="ethics-pillar">
+          <i data-feather="check-circle"></i>
+          <span>Humans diagnose &amp; decide</span>
+        </div>
+        <div class="ethics-pillar">
+          <i data-feather="check-circle"></i>
+          <span>Every uncertainty is flagged</span>
+        </div>
+        <div class="ethics-pillar">
+          <i data-feather="check-circle"></i>
+          <span>No autonomous medical advice</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="section cta-section">
+  <div class="section-container">
+    <div class="cta-card">
+      <h2>Start Reconstructing Medical Continuity</h2>
+      <p>Upload any fragmented medical evidence — prescriptions, photos, voice notes — and let Gemma 4 help bridge the healthcare gap.</p>
+      <a href="/upload" class="btn-primary btn-xl">
+        <i data-feather="upload-cloud"></i>
+        Upload Evidence Now
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Animate particles
+  const canvas = document.createElement('canvas');
+  const container = document.getElementById('particles');
+  if (container) {
+    container.appendChild(canvas);
+    canvas.width = container.offsetWidth;
+    canvas.height = container.offsetHeight;
+    const ctx = canvas.getContext('2d');
+    const particles = Array.from({length: 60}, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 2 + 0.5,
+      dx: (Math.random() - 0.5) * 0.4,
+      dy: (Math.random() - 0.5) * 0.4,
+      opacity: Math.random() * 0.5 + 0.1,
+    }));
+    function animateParticles() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
+        p.x += p.dx; p.y += p.dy;
+        if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(0, 87, 183, ${p.opacity})`;
+        ctx.fill();
+      });
+      requestAnimationFrame(animateParticles);
+    }
+    animateParticles();
+  }
+
+  // Scroll animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('visible');
+    });
+  }, {threshold: 0.1});
+  document.querySelectorAll('.problem-card, .feature-card, .pipeline-step').forEach(el => {
+    el.classList.add('fade-in');
+    observer.observe(el);
+  });
+</script>
+{% endblock %}

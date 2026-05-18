@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+{% block title %}Upload Medical Evidence — MedBridge{% endblock %}
+
+{% block content %}
+<div class="page-container" x-data="uploadApp()" x-init="init()">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-content">
+      <div class="breadcrumb">
+        <a href="/">Home</a> <span>/</span> <span>Upload Evidence</span>
+      </div>
+      <h1 class="page-title">Upload Medical Evidence</h1>
+      <p class="page-subtitle">
+        Upload any fragmented evidence — prescriptions, medicine strips, lab reports,
+        voice notes in any language. Gemma 4 will understand them all.
+      </p>
+    </div>
+  </div>
+
+  <!-- Step Indicator -->
+  <div class="steps-bar">
+    <div class="step-item" :class="{'active': step >= 1, 'done': step > 1}">
+      <div class="step-circle">
+        <span x-show="step <= 1">1</span>
+        <i x-show="step > 1" data-feather="check"></i>
+      </div>
+      <span class="step-label">Patient Info</span>
+    </div>
+    <div class="step-line" :class="{'filled': step > 1}"></div>
+    <div class="step-item" :class="{'active': step >= 2, 'done': step > 2}">
+      <div class="step-circle">
+        <span x-show="step <= 2">2</span>
+        <i x-show="step > 2" data-feather="check"></i>
+      </div>
+      <span class="step-label">Upload Files</span>
+    </div>
+    <div class="step-line" :class="{'filled': step > 2}"></div>
+    <div class="step-item" :class="{'active': step >= 3}">
+      <div class="step-circle">3</div>
+      <span class="step-label">Start Analysis</span>
+    </div>
+  </div>
+
+  <!-- Step 1: Patient Info -->
+  <div class="form-panel" x-show="step === 1" x-transition>
+    <div class="panel-header">
+      <div class="panel-icon blue"><i data-feather="user"></i></div>
+      <div>
+        <h2>Patient Information</h2>
+        <p>Basic information to identify and personalise the medical passport</p>
+      </div>
+    </div>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Patient Name <span class="required">*</span></label>
+        <input type="text" class="form-input" x-model="patient.name"
+               placeholder="e.g. Olena Kovalenko" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Primary Language</label>
+        <select class="form-select" x-model="patient.language">
+          {% for group in language_groups %}
+          <optgroup label="{{ group.region }}">
+            {% for lang in group.languages %}
+            <option value="{{ lang.code }}">{{ lang.flag }} {{ lang.name_en }}{% if lang.native and lang.native != lang.name_en and lang.native != '—' %} — {{ lang.native }}{% endif %}</option>
+            {% endfor %}
+          </optgroup>
+          {% endfor %}
+        </select>
+        <p class="form-hint" style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">
+          Source documents in any script will be understood (Cyrillic, Arabic, Devanagari, etc.).
+        </p>
+      </div>
+      <div class="form-group" x-show="patient.language === 'custom'" x-transition>
+        <label class="form-label">
+          Specify language <span class="required">*</span>
+          <span style="font-weight: 400; color: #64748b; font-size: 0.85rem;">
+            (tribal, indigenous, dialect, or any unlisted language)
+          </span>
+        </label>
+        <input type="text" class="form-input" x-model="patient.language_other"
+               placeholder="e.g. Wolof, Bambara, Mam, Hmong, Mixteco..." maxlength="120" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Approximate Age</label>
+        <input type="number" class="form-input" x-model="patient.age"
+               placeholder="e.g. 45" min="0" max="150" />
+      </div>
+      <div class="form-group full-width">
+        <label class="form-label">Additional Medical Notes</label>
+        <textarea class="form-textarea" x-model="patient.notes"
+                  placeholder="Any known allergies, conditions, or important medical information the patient can recall verbally..."
+                  rows="3"></textarea>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-primary" @click="nextStep()"
+              :disabled="!patient.name.trim()">
+        Continue to Upload <i data-feather="arrow-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Step 2: File Upload -->
+  <div class="form-panel" x-show="step === 2" x-transition>
+    <div class="panel-header">
+      <div class="panel-icon purple"><i data-feather="upload-cloud"></i></div>
+      <div>
+        <h2>Upload Medical Evidence</h2>
+        <p>Any format, any language — Gemma 4 understands them all</p>
+      </div>
+    </div>
+
+    <!-- Supported types -->
+    <div class="supported-types">
+      <div class="type-chip"><i data-feather="file-text"></i> Prescriptions</div>
+      <div class="type-chip"><i data-feather="package"></i> Medicine Strips</div>
+      <div class="type-chip"><i data-feather="activity"></i> Lab Reports</div>
+      <div class="type-chip"><i data-feather="shield"></i> Vaccination Cards</div>
+      <div class="type-chip"><i data-feather="mic"></i> Voice Notes</div>
+      <div class="type-chip"><i data-feather="image"></i> Any Medical Photo</div>
+    </div>
+
+    <!-- Drop Zone -->
+    <div class="drop-zone"
+         :class="{'drag-over': dragOver}"
+         @dragover.prevent="dragOver = true"
+         @dragleave="dragOver = false"
+         @drop.prevent="handleDrop($event)"
+         @click="$refs.fileInput.click()">
+      <div class="drop-icon">
+        <i data-feather="upload-cloud"></i>
+      </div>
+      <div class="drop-title">Drop files here or click to browse</div>
+      <div class="drop-subtitle">
+        JPG, PNG, PDF, MP3, WAV, OGG · Max 20MB per file · Multiple files supported
+      </div>
+      <input type="file" x-ref="fileInput" class="hidden"
+             multiple accept="image/*,audio/*,application/pdf,text/plain"
+             @change="handleFileSelect($event)" />
+    </div>
+
+    <!-- File List -->
+    <div class="file-list" x-show="files.length > 0">
+      <template x-for="(file, idx) in files" :key="idx">
+        <div class="file-item">
+          <div class="file-icon" :class="getFileIconClass(file.type)">
+            <i :data-feather="getFileIcon(file.type)"></i>
+          </div>
+          <div class="file-info">
+            <div class="file-name" x-text="file.name"></div>
+            <div class="file-size" x-text="formatSize(file.size)"></div>
+          </div>
+          <div class="file-category">
+            <select class="category-select" x-model="fileCategories[idx]">
+              <option value="prescription">📋 Prescription</option>
+              <option value="medicine_strip">💊 Medicine Strip</option>
+              <option value="lab_report">🧪 Lab Report</option>
+              <option value="vaccination">💉 Vaccination Card</option>
+              <option value="voice_note">🎤 Voice Note</option>
+              <option value="other">📄 Other Document</option>
+            </select>
+          </div>
+          <button class="file-remove" @click="removeFile(idx)">
+            <i data-feather="x"></i>
+          </button>
+        </div>
+      </template>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn-ghost" @click="step = 1">
+        <i data-feather="arrow-left"></i> Back
+      </button>
+      <button class="btn-primary" @click="nextStep()"
+              :disabled="files.length === 0">
+        Review &amp; Analyse <i data-feather="arrow-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Step 3: Review & Submit -->
+  <div class="form-panel" x-show="step === 3" x-transition>
+    <div class="panel-header">
+      <div class="panel-icon green"><i data-feather="check-circle"></i></div>
+      <div>
+        <h2>Review &amp; Start Analysis</h2>
+        <p>Confirm everything is correct before launching the AI pipeline</p>
+      </div>
+    </div>
+
+    <div class="review-grid">
+      <div class="review-card">
+        <div class="review-card-title"><i data-feather="user"></i> Patient</div>
+        <div class="review-field"><span>Name:</span> <strong x-text="patient.name"></strong></div>
+        <div class="review-field"><span>Language:</span> <strong x-text="patient.language === 'custom' ? (patient.language_other || 'Unspecified') : patient.language.toUpperCase()"></strong></div>
+        <div class="review-field" x-show="patient.age"><span>Age:</span> <strong x-text="patient.age"></strong></div>
+      </div>
+      <div class="review-card">
+        <div class="review-card-title"><i data-feather="files"></i> Evidence</div>
+        <div class="review-field"><span>Files:</span> <strong x-text="files.length + ' uploaded'"></strong></div>
+        <template x-for="(file, idx) in files.slice(0, 4)" :key="idx">
+          <div class="review-file">
+            <i :data-feather="getFileIcon(file.type)"></i>
+            <span x-text="file.name.length > 30 ? file.name.substring(0, 30) + '...' : file.name"></span>
+          </div>
+        </template>
+        <div x-show="files.length > 4" class="review-more" x-text="'+ ' + (files.length - 4) + ' more files'"></div>
+      </div>
+    </div>
+
+    <!-- Pipeline Preview -->
+    <div class="pipeline-preview-box">
+      <div class="ppb-title">🤖 AI Pipeline Will Run</div>
+      <div class="ppb-steps">
+        <div class="ppb-step"><span class="ppb-num">1</span> Gemma 4 Multimodal Analysis</div>
+        <div class="ppb-arrow">→</div>
+        <div class="ppb-step"><span class="ppb-num">2</span> Medical Structuring</div>
+        <div class="ppb-arrow">→</div>
+        <div class="ppb-step"><span class="ppb-num">3</span> Timeline Reconstruction</div>
+        <div class="ppb-arrow">→</div>
+        <div class="ppb-step"><span class="ppb-num">4</span> Risk Analysis</div>
+        <div class="ppb-arrow">→</div>
+        <div class="ppb-step"><span class="ppb-num">5</span> Verification Prep</div>
+        <div class="ppb-arrow">→</div>
+        <div class="ppb-step"><span class="ppb-num">6</span> Passport Generation</div>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" x-show="loading">
+      <div class="loading-spinner"></div>
+      <div class="loading-text" x-text="loadingMessage"></div>
+    </div>
+
+    <!-- Error State -->
+    <div class="error-banner" x-show="error" x-text="error"></div>
+
+    <div class="form-actions" x-show="!loading">
+      <button class="btn-ghost" @click="step = 2">
+        <i data-feather="arrow-left"></i> Back
+      </button>
+      <button class="btn-primary btn-lg launch-btn" @click="launchPipeline()">
+        <i data-feather="zap"></i>
+        Launch AI Analysis
+      </button>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="/static/js/upload.js"></script>
+{% endblock %}

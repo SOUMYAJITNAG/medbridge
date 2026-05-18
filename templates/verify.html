@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% block title %}Doctor Verification Dashboard — MedBridge Ukraine{% endblock %}
+
+{% block content %}
+<div class="page-container" x-data="verifyApp('{{ run_id }}')" x-init="init()">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header-content">
+      <div class="breadcrumb">
+        <a href="/">Home</a> <span>/</span>
+        <a :href="'/passport/' + runId">Passport</a> <span>/</span>
+        <span>Verification</span>
+      </div>
+      <h1 class="page-title">Doctor Verification Dashboard</h1>
+      <p class="page-subtitle">
+        Review and verify AI-reconstructed medical data. You are the final authority — approve, correct, or flag each item.
+      </p>
+    </div>
+    <div class="verify-status-badge" :class="overallStatus">
+      <i :data-feather="statusIcon()"></i>
+      <span x-text="statusLabel()"></span>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" x-show="loading">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Loading verification checklist...</div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-banner" x-show="error && !loading" x-text="error"></div>
+
+  <div x-show="!loading && !error">
+
+    <!-- Doctor Info Panel -->
+    <div class="form-panel doctor-panel">
+      <div class="panel-header">
+        <div class="panel-icon blue"><i data-feather="user-check"></i></div>
+        <div>
+          <h2>Verifying Clinician</h2>
+          <p>Your identity will be recorded with this verification</p>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Doctor Name / ID</label>
+          <input type="text" class="form-input" x-model="doctorName"
+                 placeholder="Dr. Smith / Medical ID" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Overall Assessment</label>
+          <select class="form-select" x-model="overallStatus">
+            <option value="pending">⏳ Pending Review</option>
+            <option value="approved">✅ Approved — Data Verified</option>
+            <option value="partial">⚠️ Partial — Some Items Need Correction</option>
+            <option value="rejected">❌ Rejected — Data Unreliable</option>
+          </select>
+        </div>
+        <div class="form-group full-width">
+          <label class="form-label">Clinical Notes</label>
+          <textarea class="form-textarea" x-model="clinicalNotes"
+                    placeholder="Add overall clinical notes, corrections, or important observations..."
+                    rows="3"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Verification Checklist -->
+    <div class="verify-sections" x-show="checklist">
+      <template x-for="section in checklist?.sections || []" :key="section.section_name">
+        <div class="verify-section-card" :class="'priority-' + section.priority">
+          <div class="vsc-header">
+            <div class="vsc-title">
+              <span class="priority-pill" :class="section.priority" x-text="section.priority?.toUpperCase()"></span>
+              <h3 x-text="section.section_name"></h3>
+            </div>
+            <span class="vsc-count" x-text="section.items?.length + ' items'"></span>
+          </div>
+
+          <div class="verify-items">
+            <template x-for="item in section.items || []" :key="item.id">
+              <div class="verify-item" :class="getItemClass(item.id)">
+                <div class="vi-header">
+                  <div class="vi-field-name" x-text="item.field_name"></div>
+                  <div class="vi-confidence">
+                    <div class="mini-bar">
+                      <div class="mini-fill"
+                           :class="item.confidence >= 0.7 ? 'high' : (item.confidence >= 0.4 ? 'medium' : 'low')"
+                           :style="'width: ' + Math.round((item.confidence || 0) * 100) + '%'">
+                      </div>
+                    </div>
+                    <span x-text="Math.round((item.confidence || 0) * 100) + '%'"></span>
+                  </div>
+                </div>
+
+                <div class="vi-extracted">
+                  <span class="vi-label">AI Extracted:</span>
+                  <span class="vi-value" x-text="item.ai_extracted_value"></span>
+                </div>
+
+                <div class="vi-source" x-show="item.source_evidence">
+                  <span class="vi-label">Source:</span>
+                  <span x-text="item.source_evidence"></span>
+                </div>
+
+                <div class="vi-guidance" x-show="item.verification_guidance">
+                  <i data-feather="info"></i>
+                  <span x-text="item.verification_guidance"></span>
+                </div>
+
+                <div class="vi-actions">
+                  <button class="vi-btn approve" @click="setItemStatus(item.id, 'approved')"
+                          :class="{active: itemStatuses[item.id] === 'approved'}">
+                    <i data-feather="check"></i> Approve
+                  </button>
+                  <button class="vi-btn flag" @click="setItemStatus(item.id, 'flagged')"
+                          :class="{active: itemStatuses[item.id] === 'flagged'}">
+                    <i data-feather="flag"></i> Flag
+                  </button>
+                  <button class="vi-btn reject" @click="setItemStatus(item.id, 'rejected')"
+                          :class="{active: itemStatuses[item.id] === 'rejected'}">
+                    <i data-feather="x"></i> Reject
+                  </button>
+                </div>
+
+                <div class="vi-note" x-show="itemStatuses[item.id] === 'flagged' || itemStatuses[item.id] === 'rejected'">
+                  <input type="text" class="form-input form-input-sm"
+                         :placeholder="'Add correction for: ' + item.field_name"
+                         x-model="itemNotes[item.id]" />
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- No Checklist Fallback -->
+    <div class="no-checklist" x-show="!checklist">
+      <i data-feather="clipboard"></i>
+      <p>No verification checklist available. The pipeline may still be running.</p>
+      <a :href="'/pipeline/' + runId" class="btn-ghost">View Pipeline Status</a>
+    </div>
+
+    <!-- Submit Bar -->
+    <div class="submit-bar" x-show="checklist">
+      <div class="submit-summary">
+        <span class="sum-item">
+          <i data-feather="check-circle"></i>
+          <span x-text="countByStatus('approved')"></span> Approved
+        </span>
+        <span class="sum-item warn">
+          <i data-feather="flag"></i>
+          <span x-text="countByStatus('flagged')"></span> Flagged
+        </span>
+        <span class="sum-item danger">
+          <i data-feather="x-circle"></i>
+          <span x-text="countByStatus('rejected')"></span> Rejected
+        </span>
+      </div>
+      <div class="submit-actions">
+        <a :href="'/passport/' + runId" class="btn-ghost">
+          <i data-feather="arrow-left"></i> Back to Passport
+        </a>
+        <button class="btn-primary" @click="submitVerification()" :disabled="submitting">
+          <span class="spinner-sm" x-show="submitting"></span>
+          <i data-feather="send" x-show="!submitting"></i>
+          <span x-text="submitting ? 'Submitting...' : 'Submit Verification'"></span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Success Banner -->
+    <div class="success-banner" x-show="submitted" x-transition>
+      <i data-feather="check-circle"></i>
+      <div>
+        <strong>Verification Submitted!</strong>
+        <p>Thank you. The verification has been recorded. The patient's medical passport is now clinician-verified.</p>
+      </div>
+      <a :href="'/passport/' + runId" class="btn-ghost-sm">View Passport</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function verifyApp(runId) {
+  return {
+    runId,
+    loading: true,
+    error: null,
+    checklist: null,
+    doctorName: '',
+    overallStatus: 'pending',
+    clinicalNotes: '',
+    itemStatuses: {},
+    itemNotes: {},
+    submitting: false,
+    submitted: false,
+
+    async init() {
+      try {
+        const res = await fetch(`/api/passport/${runId}`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        this.checklist = data.verification_checklist;
+        if (!this.checklist) {
+          // Try to get checklist from pipeline state
+          const passportData = data.passport_data;
+        }
+      } catch(e) {
+        this.error = e.message;
+      } finally {
+        this.loading = false;
+        this.$nextTick(() => feather.replace());
+      }
+    },
+
+    statusIcon() {
+      const map = {pending: 'clock', approved: 'check-circle', partial: 'alert-circle', rejected: 'x-circle'};
+      return map[this.overallStatus] || 'clock';
+    },
+    statusLabel() {
+      const map = {pending: 'Pending Review', approved: 'Approved', partial: 'Partial', rejected: 'Rejected'};
+      return map[this.overallStatus] || 'Pending';
+    },
+
+    setItemStatus(id, status) {
+      this.itemStatuses[id] = status;
+    },
+    getItemClass(id) {
+      return this.itemStatuses[id] || 'pending';
+    },
+    countByStatus(status) {
+      return Object.values(this.itemStatuses).filter(s => s === status).length;
+    },
+
+    async submitVerification() {
+      this.submitting = true;
+      try {
+        const payload = {
+          doctor_name: this.doctorName,
+          overall_status: this.overallStatus,
+          notes: this.clinicalNotes,
+          verification_data: {
+            item_statuses: this.itemStatuses,
+            item_notes: this.itemNotes,
+            verified_at: new Date().toISOString(),
+          }
+        };
+        const res = await fetch(`/api/passport/${this.runId}/verify`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        this.submitted = true;
+        window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
+      } catch(e) {
+        this.error = e.message;
+      } finally {
+        this.submitting = false;
+        this.$nextTick(() => feather.replace());
+      }
+    }
+  };
+}
+</script>
+{% endblock %}
