@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}MedBridge — Medical Continuity for Refugees{% endblock %}</title>
+  <meta name="description" content="AI-Assisted Medical Continuity Reconstruction for Displaced Refugees Worldwide" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,700;0,800;1,700&display=swap" rel="stylesheet">
+
+  <!-- Feather Icons -->
+  <script src="https://unpkg.com/feather-icons@4.29.0/dist/feather.min.js"></script>
+
+  <!-- Alpine.js -->
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <!-- Main CSS -->
+  <link rel="stylesheet" href="/static/css/main.css" />
+
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-container">
+      <a href="/" class="nav-brand">
+        <div class="nav-logo">
+          <span class="logo-cross">+</span>
+        </div>
+        <div class="nav-title">
+          <span class="brand-name">MedBridge</span>
+          <span class="brand-tag">For Refugees Worldwide</span>
+        </div>
+      </a>
+
+      <div class="nav-links">
+        <a href="/" class="nav-link {% if request.url.path == '/' %}active{% endif %}">
+          <i data-feather="home" class="nav-icon"></i> Home
+        </a>
+        <a href="/upload" class="nav-link {% if request.url.path == '/upload' %}active{% endif %}">
+          <i data-feather="upload-cloud" class="nav-icon"></i> Upload Evidence
+        </a>
+        <a href="/api/docs" class="nav-link" target="_blank">
+          <i data-feather="code" class="nav-icon"></i> API
+        </a>
+        <a href="/upload" class="btn-nav-cta">
+          <i data-feather="activity"></i> Start Now
+        </a>
+      </div>
+
+      <!-- Mobile menu toggle -->
+      <button class="mobile-menu-btn" onclick="document.querySelector('.nav-links').classList.toggle('open')">
+        <i data-feather="menu"></i>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <div class="nav-logo">
+          <span class="logo-cross">+</span>
+        </div>
+        <div>
+          <div class="footer-title">MedBridge 🌍</div>
+          <div class="footer-subtitle">AI-Assisted Medical Continuity for Displaced People Worldwide</div>
+        </div>
+      </div>
+      <div class="footer-disclaimer">
+        <p class="disclaimer-text">
+          ⚠️ This platform assists medical continuity reconstruction.
+          It does <strong>not</strong> provide medical diagnosis or treatment.
+          All outputs require clinician verification.
+        </p>
+      </div>
+      <div class="footer-tech">
+        <span class="tech-badge">Powered by Gemma 4</span>
+        <span class="tech-badge">Google ADK</span>
+        <span class="tech-badge">FastAPI</span>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>Built for the Kaggle Gemma 4 Good Hackathon · Health &amp; Sciences Track</p>
+    </div>
+  </footer>
+
+  <script>
+    feather.replace();
+    // Scroll effect for navbar
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('navbar');
+      if (window.scrollY > 20) nav.classList.add('scrolled');
+      else nav.classList.remove('scrolled');
+    });
+  </script>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>
